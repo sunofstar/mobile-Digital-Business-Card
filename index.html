@@ -289,7 +289,16 @@ $('vsend').onclick = async () => {
   if (!em.value.trim() || !em.checkValidity()) return vmsg('이메일 주소를 확인해 주세요.');
   $('vsend').disabled = true; vmsg('');
   const { error } = await sb.auth.signInWithOtp({ email: em.value.trim(), options: { shouldCreateUser: true } });
-  if (error) { vmsg('인증 코드를 보내지 못했어요. 잠시 후 다시 시도해 주세요.'); $('vsend').disabled = false; return; }
+  if (error) {
+    console.error(error);
+    const t = (error.message || '').toLowerCase();
+    const why = /not authorized/.test(t) ? '이 이메일로는 아직 보낼 수 없어요. 기본 메일 서비스는 Supabase 프로젝트 팀 멤버의 이메일로만 보낼 수 있어요.'
+      : (/rate|seconds|too many/.test(t) || error.status === 429) ? '요청이 너무 잦거나 메일 발송 한도를 넘었어요. 잠시 뒤에 다시 시도해 주세요.'
+      : /disabled|not allowed/.test(t) ? '이메일 로그인이 꺼져 있어요. Supabase의 Authentication 설정을 확인해 주세요.'
+      : '잠시 후 다시 시도해 주세요.';
+    vmsg('인증 코드를 보내지 못했어요. ' + why + ' (' + error.message + ')');
+    $('vsend').disabled = false; return;
+  }
   pending = em.value.trim();
   $('s1').classList.add('hide'); $('s2').classList.remove('hide');
   $('vinfo').textContent = pending + '(으)로 인증 코드를 보냈어요. 메일함과 스팸함을 확인해 주세요.';
