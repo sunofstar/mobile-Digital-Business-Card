@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>한장 · 모바일 명함</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{--ink:#18202F;--bg:#EEF0F4;--line:#DCE0E8;--mute:#667085}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;border-radius:12px}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #F59E0B;outline-offset:2px}
+.hide{display:none!important}
+.wrap{max-width:440px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.7rem;font-weight:800;margin:8px 0 2px}
+.sub{color:var(--mute);margin:0 0 20px}
+.box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+.f{display:block;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:10px}
+label{display:block;font-size:.85rem;color:var(--mute);margin:0 0 4px}
+.btn{width:100%;padding:13px;background:var(--ink);color:#fff;font-weight:700}
+.btn.alt{background:#fff;color:var(--ink);border:1px solid var(--line)}
+a.btn{display:block;text-align:center;text-decoration:none}
+.link{background:none;color:var(--mute);text-decoration:underline;width:100%;padding:10px}
+.err{color:#b3261e;min-height:1.4em;font-size:.9rem;margin:4px 0 8px}
+.hint{color:var(--mute);font-size:.85rem;margin:10px 0 0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sw{display:flex;gap:10px;margin:0 0 16px}
+.sw button{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.sw button.on{box-shadow:0 0 0 3px var(--ink)}
+.card{background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 8px 30px rgba(24,32,47,.12)}
+.band{height:92px}
+.avatar{width:84px;height:84px;margin:-42px 0 0 22px;border-radius:50%;background:#fff;border:4px solid #fff;display:grid;place-items:center;font-size:2rem;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.info{padding:10px 22px 4px}
+.nm{font-size:1.5rem;font-weight:800;margin:0}
+.ttl{margin:2px 0 0;font-weight:600}
+.org{margin:0;color:var(--mute)}
+.bio{margin:12px 0 0;white-space:pre-wrap}
+.det{padding:10px 22px 0;color:var(--mute);font-size:.92rem}
+.det div{margin-top:2px;word-break:break-all}
+.acts{padding:18px 22px 22px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.acts .save{grid-column:1/-1;padding:14px;color:#fff;font-weight:800;font-size:1.05rem}
+.acts a,.acts button.s{display:block;text-align:center;padding:10px 4px;background:#F3F4F7;color:var(--ink);text-decoration:none;font-size:.85rem;border-radius:12px;font-weight:600}
+.acts .off{opacity:.4;pointer-events:none}
+.empty{text-align:center;color:var(--mute);margin:40px 0}
+#prevh{font-size:.85rem;color:var(--mute);margin:20px 0 8px}
+#qrm{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;z-index:9}
+#qrm svg{width:min(80vw,340px);height:auto}
+#qrm b{font-size:1.3rem}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:.9rem;max-width:90%;z-index:10}
+.foot{text-align:center;margin-top:20px}
+.foot a{color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- 만들기 / 수정 -->
+<section id="form" class="view hide">
+  <h1 id="hd">한장</h1>
+  <p class="sub" id="sb">정보를 입력하고 버튼을 누르면 모바일 명함이 만들어져요.</p>
+  <p class="empty hide" id="fail"></p>
+  <div class="box" id="formBox">
+    <label for="name">이름 *</label><input class="f" id="name" maxlength="30" autocomplete="name">
+    <div class="row2">
+      <div><label for="company">회사</label><input class="f" id="company" maxlength="50" autocomplete="organization"></div>
+      <div><label for="department">부서</label><input class="f" id="department" maxlength="40"></div>
+    </div>
+    <label for="title">직책</label><input class="f" id="title" maxlength="40" autocomplete="organization-title">
+    <label for="phone">휴대폰</label><input class="f" id="phone" type="tel" maxlength="20" placeholder="010-1234-5678" autocomplete="tel">
+    <label for="email">이메일</label><input class="f" id="email" type="email" maxlength="100" autocomplete="email">
+    <label for="website">웹사이트</label><input class="f" id="website" maxlength="200" placeholder="https://">
+    <label for="bio">한 줄 소개</label><textarea class="f" id="bio" rows="2" maxlength="120"></textarea>
+    <label>명함 색상</label>
+    <div class="sw" id="sw"></div>
+    <p class="err" id="fm" role="alert"></p>
+    <button class="btn" id="go">명함 만들기</button>
+    <p class="hint">만든 명함은 링크를 아는 사람 누구나 볼 수 있어요. 공개하고 싶은 정보만 입력하세요.</p>
+  </div>
+  <p id="prevh">미리보기</p>
+  <div id="prev"></div>
+</section>
+
+<!-- 명함 보기 -->
+<section id="cardv" class="view hide">
+  <div id="cardBox"><p class="empty">명함을 불러오는 중...</p></div>
+  <div class="box hide" id="own" style="margin-top:16px">
+    <div class="row2"><a class="btn alt" id="oEdit">수정하기</a><button class="btn alt" id="oCopy">수정 링크 복사</button></div>
+    <p class="hint">수정 링크는 비밀번호와 같아요. 다른 기기에서 수정하려면 복사해서 안전한 곳에 보관하세요.</p>
+    <button class="link" id="oDel">명함 삭제</button>
+  </div>
+  <p class="foot"><a href="./">나도 명함 만들기</a></p>
+</section>
+</div>
+
+<div id="qrm" class="hide" role="dialog" aria-label="QR 코드"></div>
+<div id="toast" class="hide" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+// ===== Supabase 연결 정보 =====
+const SUPABASE_URL = 'https://iorgunigdmkseookjegc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_A4pM2sB4eMqHnGOSmsV0zw_9TQgY_JU';
+// ==============================
+const $ = id => document.getElementById(id);
+const COLORS = ['#2F5BEA', '#0E9F6E', '#E5484D', '#7C3AED', '#F59E0B', '#1F2937'];
+const FIELDS = ['name', 'title', 'company', 'department', 'phone', 'email', 'website', 'bio'];
+const BASE = location.protocol.startsWith('http') ? location.origin + location.pathname : '';
+const P = new URLSearchParams(location.search);
+const cardSlug = P.get('c') || (location.pathname.match(/^\/c\/([a-z0-9]+)/) || [])[1];
+const editSlug = P.get('edit');
+let color = 0, editTok = null;
+
+// DB 함수 호출 (표를 직접 읽고 쓰지 않고, 정해진 함수로만 접근해요)
+async function rpc(fn, args) {
+  const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + fn, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(args)
+  });
+  if (!r.ok) throw new Error(fn + ' HTTP ' + r.status);
+  return r.json();
+}
+// 수정 권한(비밀 키)은 이 브라우저에 저장해 둬요
+const getTok = s => { try { return localStorage.getItem('hj_' + s); } catch (e) { return null; } };
+const setTok = (s, t) => { try { localStorage.setItem('hj_' + s, t); } catch (e) {} };
+const delTok = s => { try { localStorage.removeItem('hj_' + s); } catch (e) {} };
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function toast(t) {
+  const e = $('toast');
+  e.textContent = t;
+  e.classList.remove('hide');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => e.classList.add('hide'), 2500);
+}
+function show(id) { document.querySelectorAll('.view').forEach(v => v.classList.toggle('hide', v.id !== id)); }
+const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : '';
+const shareUrl = s => BASE + '?c=' + s;
+
+/* ---------- 연락처(vCard) / QR / 공유 ---------- */
+function vcard(c) {
+  const e = s => String(s || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+  const L = ['BEGIN:VCARD', 'VERSION:3.0', 'N:' + e(c.name) + ';;;;', 'FN:' + e(c.name)];
+  if (c.company || c.department) L.push('ORG:' + e(c.company) + (c.department ? ';' + e(c.department) : ''));
+  if (c.title) L.push('TITLE:' + e(c.title));
+  if (c.phone) L.push('TEL;TYPE=CELL:' + e(c.phone));
+  if (c.email) L.push('EMAIL;TYPE=INTERNET:' + e(c.email));
+  if (safeUrl(c.website)) L.push('URL:' + c.website);
+  if (c.bio) L.push('NOTE:' + e(c.bio));
+  L.push('END:VCARD');
+  return L.join('\r\n');
+}
+function saveContact(c) {
+  const url = URL.createObjectURL(new Blob([vcard(c)], { type: 'text/vcard;charset=utf-8' }));
+  const a = el('a');
+  a.href = url;
+  a.download = (c.name || 'contact') + '.vcf';
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
+function qrSvg(text) {
+  const q = qrcode(0, 'M');
+  q.addData(text); q.make();
+  const n = q.getModuleCount();
+  let d = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += 'M' + c + ' ' + r + 'h1v1h-1z';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 ' + (n + 4) + ' ' + (n + 4) +
+    '" shape-rendering="crispEdges" role="img" aria-label="명함 QR 코드"><rect x="-2" y="-2" width="' + (n + 4) + '" height="' + (n + 4) +
+    '" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>';
+}
+function showQr(c, s) {
+  if (!s) return toast('명함을 만든 뒤에 QR을 볼 수 있어요.');
+  if (!BASE) return toast('배포한 주소에서 열어야 QR이 정상 동작해요.');
+  const m = $('qrm');
+  m.innerHTML = qrSvg(shareUrl(s));
+  m.append(el('b', '', c.name || ''), el('span', '', '카메라로 스캔하면 내 명함이 열려요'));
+  const x = el('button', 'btn alt', '닫기');
+  x.style.maxWidth = '200px';
+  x.onclick = () => m.classList.add('hide');
+  m.append(x);
+  m.classList.remove('hide');
+}
+async function share(c, s) {
+  if (!s) return toast('명함을 만든 뒤에 공유할 수 있어요.');
+  if (!BASE) return toast('배포한 주소에서 열어야 공유 링크가 만들어져요.');
+  const url = shareUrl(s);
+  try {
+    if (navigator.share) return await navigator.share({ title: c.name + ' 명함', url });
+    await navigator.clipboard.writeText(url);
+    toast('링크를 복사했어요.');
+  } catch (e) { /* 공유 창을 닫은 경우 */ }
+}
+
+/* ---------- 명함 그리기 (미리보기와 공개 페이지가 같이 씀) ---------- */
+function renderCard(box, c, s) {
+  box.textContent = '';
+  const col = COLORS[c.color || 0];
+  const card = el('div', 'card');
+  const band = el('div', 'band'); band.style.background = col;
+  const av = el('div', 'avatar', [...(c.name || '?')][0]); av.style.color = col;
+  const info = el('div', 'info');
+  info.append(el('p', 'nm', c.name || '이름'));
+  if (c.title) info.append(el('p', 'ttl', c.title));
+  const org = [c.company, c.department].filter(Boolean).join(' · ');
+  if (org) info.append(el('p', 'org', org));
+  if (c.bio) info.append(el('p', 'bio', c.bio));
+  const det = el('div', 'det');
+  if (c.phone) det.append(el('div', '', '📞 ' + c.phone));
+  if (c.email) det.append(el('div', '', '✉️ ' + c.email));
+  if (safeUrl(c.website)) det.append(el('div', '', '🔗 ' + c.website));
+  const acts = el('div', 'acts');
+  const sv = el('button', 'save', '연락처 저장'); sv.style.background = col;
+  sv.onclick = () => saveContact(c);
+  const tel = el('a', c.phone ? '' : 'off', '전화'); if (c.phone) tel.href = 'tel:' + c.phone.replace(/[^0-9+]/g, '');
+  const mail = el('a', c.email ? '' : 'off', '메일'); if (c.email) mail.href = 'mailto:' + c.email;
+  const sh = el('button', 's', '공유'); sh.onclick = () => share(c, s);
+  const qr = el('button', 's', 'QR'); qr.onclick = () => showQr(c, s);
+  acts.append(sv, tel, mail, sh, qr);
+  card.append(band, av, info, det, acts);
+  box.append(card);
+}
+
+/* ---------- 명함 보기 ---------- */
+async function showCard(s) {
+  show('cardv');
+  const k = P.get('k');   // 만든 직후 넘어온 수정 키 (주소에서는 지워요)
+  if (k) { setTok(s, k); history.replaceState(null, '', '?c=' + s); }
+  const tok = k || getTok(s);
+  let c = null;
+  try { c = (await rpc('get_card', { p_slug: s }))[0]; } catch (e) { console.error(e); }
+  const box = $('cardBox');
+  if (!c) { box.textContent = ''; box.append(el('p', 'empty', '명함을 찾을 수 없어요. 링크를 다시 확인해 주세요.')); return; }
+  document.title = c.name + ' · 명함';
+  renderCard(box, c, s);
+  $('own').classList.toggle('hide', !tok);
+  if (!tok) return;
+  $('oEdit').href = '?edit=' + s;
+  $('oCopy').onclick = () => {
+    if (!BASE) return toast('배포한 주소에서 열어야 링크가 만들어져요.');
+    navigator.clipboard.writeText(BASE + '?edit=' + s + '&k=' + tok).then(() => toast('수정 링크를 복사했어요.'));
+  };
+  $('oDel').onclick = async () => {
+    if (!confirm('명함을 삭제할까요? 되돌릴 수 없어요.')) return;
+    try {
+      if (!(await rpc('delete_card', { p_slug: s, p_token: tok }))) throw new Error('denied');
+      delTok(s); location.href = location.pathname;
+    } catch (e) { toast('삭제하지 못했어요.'); }
+  };
+}
+
+/* ---------- 만들기 / 수정 ---------- */
+const args = v => ({
+  p_name: v.name, p_title: v.title, p_company: v.company, p_department: v.department,
+  p_phone: v.phone, p_email: v.email, p_website: v.website, p_bio: v.bio, p_color: v.color
+});
+function readForm() {
+  const v = { color };
+  FIELDS.forEach(f => { const t = $(f).value.trim(); v[f] = f === 'name' ? t : (t || null); });
+  if (v.website && !/^https?:\/\//i.test(v.website)) v.website = 'https://' + v.website;
+  return v;
+}
+const preview = () => renderCard($('prev'), readForm(), editSlug);
+function drawSwatches() {
+  const box = $('sw');
+  box.textContent = '';
+  COLORS.forEach((c, i) => {
+    const b = el('button', i === color ? 'on' : '');
+    b.type = 'button'; b.style.background = c; b.setAttribute('aria-label', '색상 ' + (i + 1));
+    b.onclick = () => { color = i; drawSwatches(); preview(); };
+    box.append(b);
+  });
+}
+function fail(t) {
+  $('formBox').classList.add('hide'); $('prevh').classList.add('hide'); $('prev').textContent = '';
+  $('fail').textContent = t; $('fail').classList.remove('hide');
+}
+async function showForm() {
+  show('form');
+  if (editSlug) {
+    $('hd').textContent = '명함 수정'; $('sb').textContent = '고친 내용은 같은 링크와 QR에 그대로 반영돼요.'; $('go').textContent = '저장하기';
+    const k = P.get('k');
+    if (k) { setTok(editSlug, k); history.replaceState(null, '', '?edit=' + editSlug); }
+    editTok = k || getTok(editSlug);
+    if (!editTok) return fail('수정 권한이 없어요. 명함을 만든 기기에서 열거나, 수정 링크로 들어와 주세요.');
+    let c = null;
+    try { c = (await rpc('get_card', { p_slug: editSlug }))[0]; } catch (e) { console.error(e); }
+    if (!c) return fail('명함을 찾을 수 없어요.');
+    FIELDS.forEach(f => $(f).value = c[f] || '');
+    color = c.color;
+  }
+  drawSwatches(); preview();
+}
+$('form').addEventListener('input', preview);
+$('go').onclick = async () => {
+  const v = readForm(), m = $('fm');
+  m.textContent = '';
+  if (!v.name) { m.textContent = '이름을 입력해 주세요.'; return; }
+  $('go').disabled = true;
+  try {
+    if (editSlug) {
+      if (!(await rpc('update_card', { p_slug: editSlug, p_token: editTok, ...args(v) }))) throw new Error('denied');
+      location.href = '?c=' + editSlug;
+    } else {
+      const row = (await rpc('create_card', args(v)))[0];
+      setTok(row.out_slug, row.out_token);
+      location.href = '?c=' + row.out_slug + '&k=' + row.out_token;
+    }
+  } catch (e) {
+    console.error(e);
+    m.textContent = '저장하지 못했어요. 입력 내용을 확인하고 다시 시도해 주세요.';
+    $('go').disabled = false;
+  }
+};
+
+/* ---------- 시작 ---------- */
+if (cardSlug) showCard(cardSlug); else showForm();
+</script>
+</body>
+</html>
