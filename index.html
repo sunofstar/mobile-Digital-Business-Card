@@ -28,6 +28,7 @@ a.btn,label.btn{display:block;text-align:center;text-decoration:none;cursor:poin
 .err{color:#b3261e;min-height:1.4em;font-size:.9rem;margin:4px 0 8px}
 .hint{color:var(--mute);font-size:.85rem;margin:10px 0 0}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.note{background:#E7F6EE;color:#1b6b45;padding:10px 12px;border-radius:10px;font-size:.88rem;margin:0 0 14px}
 .who{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:16px;font-size:.9rem}
 .who b{color:#1b7a4b;word-break:break-all}
 .who button{background:none;color:var(--mute);text-decoration:underline;padding:4px;flex:none}
@@ -90,6 +91,7 @@ img.avatar{object-fit:cover;display:block}
   <h1>내 명함</h1>
   <div class="who"><span>✔ 인증된 이메일 <b id="who"></b></span><button id="lo">로그아웃</button></div>
   <div class="box">
+    <p class="note hide" id="dirnote">✔ 회사에 등록된 정보를 불러왔어요. 이름, 회사, 부서, 직책은 등록된 값으로 고정돼요.</p>
     <label>프로필 사진</label>
     <div class="row2">
       <label class="btn alt" for="photo">사진 선택</label>
@@ -357,7 +359,19 @@ async function showForm() {
   $('who').textContent = user.email;
   const { data } = await sb.from('cards').select('*').eq('user_id', user.id).maybeSingle();
   myCard = data;
-  FIELDS.forEach(f => $(f).value = (myCard && myCard[f]) || '');
+  // 인증한 이메일로 등록된 정보(명단)가 있으면 자동으로 불러와요
+  let dir = null;
+  try { const r = await sb.rpc('get_my_profile'); dir = (r.data && r.data[0]) || null; } catch (e) { console.error(e); }
+  const LOCKED = ['name', 'company', 'department', 'title'];
+  FIELDS.forEach(f => {
+    const locked = !!dir && LOCKED.includes(f);
+    let val = (myCard && myCard[f]) || '';
+    if (locked) val = dir[f] || '';
+    else if (dir && f === 'phone' && !val) val = dir.phone || '';
+    $(f).value = val;
+    $(f).readOnly = locked;
+  });
+  $('dirnote').classList.toggle('hide', !dir);
   $('email').value = user.email;
   color = myCard ? myCard.color : 0;
   photoBlob = null; photoCleared = false; previewUrl = '';
@@ -389,7 +403,7 @@ $('go').onclick = async () => {
     location.href = '?c=' + data[0].out_slug;
   } catch (e) {
     console.error(e);
-    m.textContent = '저장하지 못했어요. 입력 내용을 확인하고 다시 시도해 주세요.';
+    m.textContent = /명단/.test((e && e.message) || '') ? '등록된 명단에 없는 이메일이에요. 관리자에게 문의해 주세요.' : '저장하지 못했어요. 입력 내용을 확인하고 다시 시도해 주세요.';
     $('go').disabled = false;
   }
 };
