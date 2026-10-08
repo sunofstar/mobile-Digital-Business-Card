@@ -12,31 +12,37 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Pretendard Va
 button,input,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:0;border-radius:12px}
 button:disabled{opacity:.5;cursor:not-allowed}
-button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #F59E0B;outline-offset:2px}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible,label:focus-within{outline:3px solid #F59E0B;outline-offset:2px}
 .hide{display:none!important}
 .wrap{max-width:440px;margin:0 auto;padding:20px 16px 48px}
 h1{font-size:1.7rem;font-weight:800;margin:8px 0 2px}
 .sub{color:var(--mute);margin:0 0 20px}
 .box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
 .f{display:block;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:10px}
+.f[readonly]{background:#F3F4F7;color:var(--mute)}
 label{display:block;font-size:.85rem;color:var(--mute);margin:0 0 4px}
 .btn{width:100%;padding:13px;background:var(--ink);color:#fff;font-weight:700}
 .btn.alt{background:#fff;color:var(--ink);border:1px solid var(--line)}
-a.btn{display:block;text-align:center;text-decoration:none}
+a.btn,label.btn{display:block;text-align:center;text-decoration:none;cursor:pointer;margin:0;font-size:inherit;color:var(--ink)}
 .link{background:none;color:var(--mute);text-decoration:underline;width:100%;padding:10px}
 .err{color:#b3261e;min-height:1.4em;font-size:.9rem;margin:4px 0 8px}
 .hint{color:var(--mute);font-size:.85rem;margin:10px 0 0}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.who{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:16px;font-size:.9rem}
+.who b{color:#1b7a4b;word-break:break-all}
+.who button{background:none;color:var(--mute);text-decoration:underline;padding:4px;flex:none}
 .sw{display:flex;gap:10px;margin:0 0 16px}
 .sw button{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line)}
 .sw button.on{box-shadow:0 0 0 3px var(--ink)}
 .card{background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 8px 30px rgba(24,32,47,.12)}
 .band{height:92px}
 .avatar{width:84px;height:84px;margin:-42px 0 0 22px;border-radius:50%;background:#fff;border:4px solid #fff;display:grid;place-items:center;font-size:2rem;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+img.avatar{object-fit:cover;display:block}
 .info{padding:10px 22px 4px}
 .nm{font-size:1.5rem;font-weight:800;margin:0}
 .ttl{margin:2px 0 0;font-weight:600}
 .org{margin:0;color:var(--mute)}
+.vb{display:inline-block;margin-top:8px;font-size:.78rem;font-weight:700;color:#1b7a4b;background:#E7F6EE;padding:2px 10px;border-radius:999px}
 .bio{margin:12px 0 0;white-space:pre-wrap}
 .det{padding:10px 22px 0;color:var(--mute);font-size:.92rem}
 .det div{margin-top:2px;word-break:break-all}
@@ -57,27 +63,55 @@ a.btn{display:block;text-align:center;text-decoration:none}
 <body>
 <div class="wrap">
 
+<!-- 이메일 인증 -->
+<section id="verify" class="view hide">
+  <h1>한장</h1>
+  <p class="sub">이메일 인증을 하면 내 명함을 만들 수 있어요. 비밀번호는 필요 없어요.</p>
+  <div class="box">
+    <div id="s1">
+      <label for="vem">이메일</label>
+      <input class="f" id="vem" type="email" autocomplete="email" placeholder="name@company.com">
+      <button class="btn" id="vsend">인증 코드 받기</button>
+    </div>
+    <div id="s2" class="hide">
+      <p class="hint" id="vinfo" style="margin:0 0 12px"></p>
+      <label for="vcode">인증 코드</label>
+      <input class="f" id="vcode" inputmode="numeric" autocomplete="one-time-code" maxlength="8">
+      <button class="btn" id="vgo">확인</button>
+      <button class="link" id="vback">이메일 다시 입력</button>
+    </div>
+    <p class="err" id="vm" role="alert"></p>
+  </div>
+  <p class="hint">인증한 이메일이 명함에 표시되고 '인증됨' 표시가 붙어요. 다른 사람의 이메일로는 명함을 만들 수 없어요.</p>
+</section>
+
 <!-- 만들기 / 수정 -->
 <section id="form" class="view hide">
-  <h1 id="hd">한장</h1>
-  <p class="sub" id="sb">정보를 입력하고 버튼을 누르면 모바일 명함이 만들어져요.</p>
-  <p class="empty hide" id="fail"></p>
-  <div class="box" id="formBox">
-    <label for="name">이름 *</label><input class="f" id="name" maxlength="30" autocomplete="name">
+  <h1>내 명함</h1>
+  <div class="who"><span>✔ 인증된 이메일 <b id="who"></b></span><button id="lo">로그아웃</button></div>
+  <div class="box">
+    <label>프로필 사진</label>
     <div class="row2">
+      <label class="btn alt" for="photo">사진 선택</label>
+      <button class="btn alt" id="pclear" type="button">사진 지우기</button>
+    </div>
+    <input id="photo" type="file" accept="image/*" class="hide">
+    <label for="name">이름 *</label><input class="f" id="name" maxlength="30" autocomplete="name">
+    <div class="row2" style="margin:0">
       <div><label for="company">회사</label><input class="f" id="company" maxlength="50" autocomplete="organization"></div>
       <div><label for="department">부서</label><input class="f" id="department" maxlength="40"></div>
     </div>
     <label for="title">직책</label><input class="f" id="title" maxlength="40" autocomplete="organization-title">
     <label for="phone">휴대폰</label><input class="f" id="phone" type="tel" maxlength="20" placeholder="010-1234-5678" autocomplete="tel">
-    <label for="email">이메일</label><input class="f" id="email" type="email" maxlength="100" autocomplete="email">
+    <label for="email">이메일 (인증된 주소로 고정)</label><input class="f" id="email" readonly>
     <label for="website">웹사이트</label><input class="f" id="website" maxlength="200" placeholder="https://">
     <label for="bio">한 줄 소개</label><textarea class="f" id="bio" rows="2" maxlength="120"></textarea>
     <label>명함 색상</label>
     <div class="sw" id="sw"></div>
     <p class="err" id="fm" role="alert"></p>
     <button class="btn" id="go">명함 만들기</button>
-    <p class="hint">만든 명함은 링크를 아는 사람 누구나 볼 수 있어요. 공개하고 싶은 정보만 입력하세요.</p>
+    <a class="btn alt hide" id="view" style="margin-top:8px">내 명함 보기</a>
+    <p class="hint">명함은 링크를 아는 사람 누구나 볼 수 있어요. 공개하고 싶은 정보만 입력하세요.</p>
   </div>
   <p id="prevh">미리보기</p>
   <div id="prev"></div>
@@ -87,8 +121,7 @@ a.btn{display:block;text-align:center;text-decoration:none}
 <section id="cardv" class="view hide">
   <div id="cardBox"><p class="empty">명함을 불러오는 중...</p></div>
   <div class="box hide" id="own" style="margin-top:16px">
-    <div class="row2"><a class="btn alt" id="oEdit">수정하기</a><button class="btn alt" id="oCopy">수정 링크 복사</button></div>
-    <p class="hint">수정 링크는 비밀번호와 같아요. 다른 기기에서 수정하려면 복사해서 안전한 곳에 보관하세요.</p>
+    <a class="btn alt" id="oEdit" href="./">수정하기</a>
     <button class="link" id="oDel">명함 삭제</button>
   </div>
   <p class="foot"><a href="./">나도 명함 만들기</a></p>
@@ -98,35 +131,22 @@ a.btn{display:block;text-align:center;text-decoration:none}
 <div id="qrm" class="hide" role="dialog" aria-label="QR 코드"></div>
 <div id="toast" class="hide" role="status"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script>
 // ===== Supabase 연결 정보 =====
 const SUPABASE_URL = 'https://iorgunigdmkseookjegc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_A4pM2sB4eMqHnGOSmsV0zw_9TQgY_JU';
 // ==============================
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const COLORS = ['#2F5BEA', '#0E9F6E', '#E5484D', '#7C3AED', '#F59E0B', '#1F2937'];
-const FIELDS = ['name', 'title', 'company', 'department', 'phone', 'email', 'website', 'bio'];
+const FIELDS = ['name', 'title', 'company', 'department', 'phone', 'website', 'bio'];
 const BASE = location.protocol.startsWith('http') ? location.origin + location.pathname : '';
 const P = new URLSearchParams(location.search);
 const cardSlug = P.get('c') || (location.pathname.match(/^\/c\/([a-z0-9]+)/) || [])[1];
-const editSlug = P.get('edit');
-let color = 0, editTok = null;
-
-// DB 함수 호출 (표를 직접 읽고 쓰지 않고, 정해진 함수로만 접근해요)
-async function rpc(fn, args) {
-  const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + fn, {
-    method: 'POST',
-    headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify(args)
-  });
-  if (!r.ok) throw new Error(fn + ' HTTP ' + r.status);
-  return r.json();
-}
-// 수정 권한(비밀 키)은 이 브라우저에 저장해 둬요
-const getTok = s => { try { return localStorage.getItem('hj_' + s); } catch (e) { return null; } };
-const setTok = (s, t) => { try { localStorage.setItem('hj_' + s, t); } catch (e) {} };
-const delTok = s => { try { localStorage.removeItem('hj_' + s); } catch (e) {} };
+let user = null, myCard = null, color = 0, photoBlob = null, photoCleared = false, previewUrl = '', pending = '';
+const pubPhoto = p => p ? SUPABASE_URL + '/storage/v1/object/public/avatars/' + p : '';
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -205,12 +225,20 @@ function renderCard(box, c, s) {
   const col = COLORS[c.color || 0];
   const card = el('div', 'card');
   const band = el('div', 'band'); band.style.background = col;
-  const av = el('div', 'avatar', [...(c.name || '?')][0]); av.style.color = col;
+  const initial = () => { const a = el('div', 'avatar', [...(c.name || '?')][0]); a.style.color = col; return a; };
+  let av = initial();
+  if (c.photoUrl) {
+    const img = el('img', 'avatar');
+    img.src = c.photoUrl; img.alt = (c.name || '') + ' 사진';
+    img.onerror = () => img.replaceWith(initial());
+    av = img;
+  }
   const info = el('div', 'info');
   info.append(el('p', 'nm', c.name || '이름'));
   if (c.title) info.append(el('p', 'ttl', c.title));
   const org = [c.company, c.department].filter(Boolean).join(' · ');
   if (org) info.append(el('p', 'org', org));
+  if (c.email) info.append(el('span', 'vb', '✔ 이메일 인증'));
   if (c.bio) info.append(el('p', 'bio', c.bio));
   const det = el('div', 'det');
   if (c.phone) det.append(el('div', '', '📞 ' + c.phone));
@@ -231,43 +259,60 @@ function renderCard(box, c, s) {
 /* ---------- 명함 보기 ---------- */
 async function showCard(s) {
   show('cardv');
-  const k = P.get('k');   // 만든 직후 넘어온 수정 키 (주소에서는 지워요)
-  if (k) { setTok(s, k); history.replaceState(null, '', '?c=' + s); }
-  const tok = k || getTok(s);
-  let c = null;
-  try { c = (await rpc('get_card', { p_slug: s }))[0]; } catch (e) { console.error(e); }
+  const { data, error } = await sb.rpc('get_card', { p_slug: s });
+  const c = data && data[0];
   const box = $('cardBox');
-  if (!c) { box.textContent = ''; box.append(el('p', 'empty', '명함을 찾을 수 없어요. 링크를 다시 확인해 주세요.')); return; }
+  if (error || !c) { box.textContent = ''; box.append(el('p', 'empty', '명함을 찾을 수 없어요. 링크를 다시 확인해 주세요.')); return; }
   document.title = c.name + ' · 명함';
+  c.photoUrl = pubPhoto(c.photo_path);
   renderCard(box, c, s);
-  $('own').classList.toggle('hide', !tok);
-  if (!tok) return;
-  $('oEdit').href = '?edit=' + s;
-  $('oCopy').onclick = () => {
-    if (!BASE) return toast('배포한 주소에서 열어야 링크가 만들어져요.');
-    navigator.clipboard.writeText(BASE + '?edit=' + s + '&k=' + tok).then(() => toast('수정 링크를 복사했어요.'));
-  };
+  $('own').classList.toggle('hide', !c.is_mine);
   $('oDel').onclick = async () => {
     if (!confirm('명함을 삭제할까요? 되돌릴 수 없어요.')) return;
-    try {
-      if (!(await rpc('delete_card', { p_slug: s, p_token: tok }))) throw new Error('denied');
-      delTok(s); location.href = location.pathname;
-    } catch (e) { toast('삭제하지 못했어요.'); }
+    const { error } = await sb.from('cards').delete().eq('slug', s);
+    if (error) return toast('삭제하지 못했어요.');
+    if (c.photo_path) sb.storage.from('avatars').remove([c.photo_path]);
+    location.href = location.pathname;
   };
 }
 
-/* ---------- 만들기 / 수정 ---------- */
-const args = v => ({
-  p_name: v.name, p_title: v.title, p_company: v.company, p_department: v.department,
-  p_phone: v.phone, p_email: v.email, p_website: v.website, p_bio: v.bio, p_color: v.color
-});
+/* ---------- 이메일 인증 (비밀번호 없이 메일로 받은 코드) ---------- */
+const vmsg = t => { $('vm').textContent = t; };
+function resetVerify() {
+  $('s2').classList.add('hide'); $('s1').classList.remove('hide');
+  $('vsend').disabled = false; $('vcode').value = ''; vmsg('');
+}
+$('vsend').onclick = async () => {
+  const em = $('vem');
+  if (!em.value.trim() || !em.checkValidity()) return vmsg('이메일 주소를 확인해 주세요.');
+  $('vsend').disabled = true; vmsg('');
+  const { error } = await sb.auth.signInWithOtp({ email: em.value.trim(), options: { shouldCreateUser: true } });
+  if (error) { vmsg('인증 코드를 보내지 못했어요. 잠시 후 다시 시도해 주세요.'); $('vsend').disabled = false; return; }
+  pending = em.value.trim();
+  $('s1').classList.add('hide'); $('s2').classList.remove('hide');
+  $('vinfo').textContent = pending + '(으)로 인증 코드를 보냈어요. 메일함과 스팸함을 확인해 주세요.';
+};
+$('vgo').onclick = async () => {
+  const token = $('vcode').value.trim();
+  if (!token) return;
+  $('vgo').disabled = true; vmsg('');
+  const { data, error } = await sb.auth.verifyOtp({ email: pending, token, type: 'email' });
+  $('vgo').disabled = false;
+  if (error || !data.session) return vmsg('코드가 맞지 않거나 만료됐어요. 다시 확인해 주세요.');
+  user = data.session.user; showForm();
+};
+$('vback').onclick = resetVerify;
+$('lo').onclick = async () => { await sb.auth.signOut(); user = null; myCard = null; resetVerify(); show('verify'); };
+
+/* ---------- 만들기 / 수정 + 사진 ---------- */
 function readForm() {
-  const v = { color };
+  const v = { color, email: user ? user.email : null };
   FIELDS.forEach(f => { const t = $(f).value.trim(); v[f] = f === 'name' ? t : (t || null); });
   if (v.website && !/^https?:\/\//i.test(v.website)) v.website = 'https://' + v.website;
+  v.photoUrl = photoCleared ? '' : (previewUrl || pubPhoto(myCard && myCard.photo_path));
   return v;
 }
-const preview = () => renderCard($('prev'), readForm(), editSlug);
+const preview = () => renderCard($('prev'), readForm(), myCard && myCard.slug);
 function drawSwatches() {
   const box = $('sw');
   box.textContent = '';
@@ -278,24 +323,47 @@ function drawSwatches() {
     box.append(b);
   });
 }
-function fail(t) {
-  $('formBox').classList.add('hide'); $('prevh').classList.add('hide'); $('prev').textContent = '';
-  $('fail').textContent = t; $('fail').classList.remove('hide');
+// 사진을 400x400 정사각형으로 잘라 줄여서 올려요 (용량 절약)
+function resize(file) {
+  return new Promise((ok, no) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const S = 400, c = document.createElement('canvas');
+      c.width = c.height = S;
+      const m = Math.min(img.width, img.height);
+      c.getContext('2d').drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, S, S);
+      URL.revokeObjectURL(u);
+      c.toBlob(b => b ? ok(b) : no(new Error('blob')), 'image/jpeg', 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(u); no(new Error('img')); };
+    img.src = u;
+  });
 }
+$('photo').onchange = async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  if (f.size > 15 * 1024 * 1024) return toast('사진이 너무 커요. 15MB 이하로 골라 주세요.');
+  try {
+    photoBlob = await resize(f); photoCleared = false;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = URL.createObjectURL(photoBlob); preview();
+  } catch (err) { toast('사진을 불러오지 못했어요. 다른 사진을 골라 주세요.'); }
+};
+$('pclear').onclick = () => { photoBlob = null; previewUrl = ''; photoCleared = true; preview(); };
+
 async function showForm() {
   show('form');
-  if (editSlug) {
-    $('hd').textContent = '명함 수정'; $('sb').textContent = '고친 내용은 같은 링크와 QR에 그대로 반영돼요.'; $('go').textContent = '저장하기';
-    const k = P.get('k');
-    if (k) { setTok(editSlug, k); history.replaceState(null, '', '?edit=' + editSlug); }
-    editTok = k || getTok(editSlug);
-    if (!editTok) return fail('수정 권한이 없어요. 명함을 만든 기기에서 열거나, 수정 링크로 들어와 주세요.');
-    let c = null;
-    try { c = (await rpc('get_card', { p_slug: editSlug }))[0]; } catch (e) { console.error(e); }
-    if (!c) return fail('명함을 찾을 수 없어요.');
-    FIELDS.forEach(f => $(f).value = c[f] || '');
-    color = c.color;
-  }
+  $('who').textContent = user.email;
+  const { data } = await sb.from('cards').select('*').eq('user_id', user.id).maybeSingle();
+  myCard = data;
+  FIELDS.forEach(f => $(f).value = (myCard && myCard[f]) || '');
+  $('email').value = user.email;
+  color = myCard ? myCard.color : 0;
+  photoBlob = null; photoCleared = false; previewUrl = '';
+  $('go').textContent = myCard ? '저장하기' : '명함 만들기';
+  $('view').classList.toggle('hide', !myCard);
+  if (myCard) $('view').href = '?c=' + myCard.slug;
   drawSwatches(); preview();
 }
 $('form').addEventListener('input', preview);
@@ -304,15 +372,21 @@ $('go').onclick = async () => {
   m.textContent = '';
   if (!v.name) { m.textContent = '이름을 입력해 주세요.'; return; }
   $('go').disabled = true;
+  const oldPath = myCard && myCard.photo_path;
   try {
-    if (editSlug) {
-      if (!(await rpc('update_card', { p_slug: editSlug, p_token: editTok, ...args(v) }))) throw new Error('denied');
-      location.href = '?c=' + editSlug;
-    } else {
-      const row = (await rpc('create_card', args(v)))[0];
-      setTok(row.out_slug, row.out_token);
-      location.href = '?c=' + row.out_slug + '&k=' + row.out_token;
+    let path = photoCleared ? null : oldPath || null;
+    if (photoBlob) {
+      path = user.id + '/' + Date.now() + '.jpg';
+      const up = await sb.storage.from('avatars').upload(path, photoBlob, { contentType: 'image/jpeg' });
+      if (up.error) throw up.error;
     }
+    const { data, error } = await sb.rpc('save_card', {
+      p_name: v.name, p_title: v.title, p_company: v.company, p_department: v.department,
+      p_phone: v.phone, p_website: v.website, p_bio: v.bio, p_color: v.color, p_photo: path
+    });
+    if (error) throw error;
+    if (oldPath && oldPath !== path) sb.storage.from('avatars').remove([oldPath]);   // 이전 사진 정리
+    location.href = '?c=' + data[0].out_slug;
   } catch (e) {
     console.error(e);
     m.textContent = '저장하지 못했어요. 입력 내용을 확인하고 다시 시도해 주세요.';
@@ -321,7 +395,11 @@ $('go').onclick = async () => {
 };
 
 /* ---------- 시작 ---------- */
-if (cardSlug) showCard(cardSlug); else showForm();
+(async () => {
+  if (cardSlug) return showCard(cardSlug);   // 명함 보기는 인증 없이 가능해요
+  const { data } = await sb.auth.getSession();
+  if (data.session) { user = data.session.user; showForm(); } else show('verify');
+})();
 </script>
 </body>
 </html>
